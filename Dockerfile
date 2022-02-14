@@ -8,14 +8,26 @@ RUN yum install -q -y wget \
     zlib-devel bzip2 bzip2-libs \
     java-1.8.0-openjdk-devel
 
-ARG VERSION=3.6.0
+# https://unix.stackexchange.com/questions/635758/local-installation-of-pcre2-not-detected-while-installing-r-4-0-4-from-source
+# https://unix.stackexchange.com/questions/343452/how-to-install-r-3-3-1-in-my-own-directory
+
+ARG VERSION=4.1.2
 ARG R_DIR=/opt/R/
 
-RUN wget -q https://cran.r-project.org/src/base/R-3/R-${VERSION}.tar.gz && \
+RUN wget -q https://cran.r-project.org/src/base/R-4/R-${VERSION}.tar.gz && \
     mkdir ${R_DIR} && \
     tar -xf R-${VERSION}.tar.gz && \
     mv R-${VERSION}/* ${R_DIR} && \
     rm R-${VERSION}.tar.gz
+
+RUN cd /opt/R/ && \
+	wget https://github.com/PhilipHazel/pcre2/releases/download/pcre2-10.39/pcre2-10.39.tar.gz && \
+	tar -zxvf pcre2-10.39.tar.gz && \
+	cd pcre2-10.39 && \
+	./configure && \
+	make -j 24 && \
+	make install && \
+	cd ..
 
 WORKDIR ${R_DIR}
 RUN ./configure --prefix=${R_DIR} --exec-prefix=${R_DIR} --with-libpth-prefix=/opt/ --enable-R-shlib && \
